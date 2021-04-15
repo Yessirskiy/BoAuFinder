@@ -37,6 +37,37 @@ HEADERS = { #Headers for site requests
 print("Type name of the book or author: ")
 name = input() #Getting name of the book or author
 
-search = engine_url + search_link_ilibrary(name.upper()) #Getting a full link for our search request
+search_link = engine_url + search_link_ilibrary(name.upper()) #Getting a full link for our search request
 
-print(search)
+print(search_link)
+
+session = requests.get(search_link, headers=HEADERS) #Session for the requests
+soup = BeautifulSoup(session.text, 'lxml')
+
+try: #Trying to get the result of search
+    amount_of_books = soup.find('span', attrs={'style': 'font-size: 75%; color: #666666;'}).find('b') #Find amount of books or authors it has found
+except:
+    amount_of_books = 0
+    print("Found Books or Authors: " + str(amount_of_books))
+    print("Try again!")
+    exit()
+
+print("Found Books or Authors: " + amount_of_books.text)
+if (amount_of_books.text != "0"): #Ask for countinue
+    des = ''
+    while (des != 'n' or des != 'N' or des != 'Y' or des != 'y'):
+        print("Open the following book or author biography?: Y/N")
+        des = input()
+        if(des == 'N' or des == 'n'):
+            exit()
+        elif(des == 'Y' or des == 'y'):
+            break
+else:
+    print("No books or authors with this name")
+
+text_link = 'https://ilibrary.ru' + str(soup.find('li').find('a').get('href')) #Getting link for the text of book or biography
+print(text_link)
+
+    
+
+
