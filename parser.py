@@ -2,7 +2,28 @@ import requests
 import urllib.parse 
 from bs4 import BeautifulSoup
 import sys
+import os
 
+def transliterate(name):
+   #Dictionary
+   dictionary = {'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo',
+      'ж':'zh','з':'z','и':'i','й':'i','к':'k','л':'l','м':'m','н':'n',
+      'о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'h',
+      'ц':'c','ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'y','ь':'','э':'e',
+      'ю':'u','я':'ya', 'А':'A','Б':'B','В':'V','Г':'G','Д':'D','Е':'E','Ё':'YO',
+      'Ж':'ZH','З':'Z','И':'I','Й':'I','К':'K','Л':'L','М':'M','Н':'N',
+      'О':'O','П':'P','Р':'R','С':'S','Т':'T','У':'U','Ф':'F','Х':'H',
+      'Ц':'C','Ч':'CH','Ш':'SH','Щ':'SCH','Ъ':'','Ы':'y','Ь':'','Э':'E',
+      'Ю':'U','Я':'YA',',':'','?':'',' ':'_','~':'','!':'','@':'','#':'',
+      '$':'','%':'','^':'','&':'','*':'','(':'',')':'','-':'','=':'','+':'',
+      ':':'',';':'','<':'','>':'','\'':'','"':'','\\':'','/':'','№':'',
+      '[':'',']':'','{':'','}':'','ґ':'','ї':'', 'є':'','Ґ':'g','Ї':'i',
+      'Є':'e', '—':''}
+        
+   # Циклически заменяем все буквы в строке
+   for key in dictionary:
+      name = name.replace(key, dictionary[key])
+   return name
 def search_link_ilibrary(name): #make an addition to the ilibrary search link using ascii codes
     name_url = ""
     for letter in name:
@@ -29,7 +50,6 @@ def search_link_ilibrary(name): #make an addition to the ilibrary search link us
                     name_url += chr(ord(letter) - 1001)
     return name_url
 
-
 engine_url = 'https://ilibrary.ru/search.phtml?q=' #Site with online books - ilibrary
 
 HEADERS = { #Headers for site requests
@@ -41,7 +61,7 @@ name = input() #Getting name of the book or author
 
 search_link = engine_url + search_link_ilibrary(name.upper()) #Getting a full link for our search request
 
-print(search_link)
+#print(search_link)
 
 session = requests.get(search_link, headers=HEADERS) #Session for the requests
 soup = BeautifulSoup(session.text, 'lxml')
@@ -49,10 +69,10 @@ soup = BeautifulSoup(session.text, 'lxml')
 try:
     soup_type = soup.find('span', attrs={'style': 'font-size: 75%; color: #666666;'}) #Check if its authour or book
     if "Найдено авторов:" in soup_type.text:
-        print("This is author")
+        #print("This is author")
         type = "authors"
     else:
-        print("This is book")
+        #print("This is book")
         type = "books"
 except:
     type = "anything"
@@ -83,6 +103,14 @@ session = requests.get(text_link, headers=HEADERS) #Session for the requests
 soup = BeautifulSoup(session.text, 'lxml')
 if type == "books":
     print("Make sure author is " + soup.find('div', class_="author").text)
+
+file = open('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '.txt', "w")
+print("File for text created")
+text = soup.find('div', id='text').find_all('span', class_="p")
+for paragraph in text:
+    file.write(paragraph.text + '\n')
+file.close()
+print("Text copied!")
 
 
     
