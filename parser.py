@@ -1,15 +1,17 @@
 import requests
 import urllib.parse 
 from bs4 import BeautifulSoup
+import sys
 
 def search_link_ilibrary(name): #make an addition to the ilibrary search link using ascii codes
     name_url = ""
     for letter in name:
-        #print(ord(letter))
-        if ((ord(letter) < 1040 or ord(letter) > 1103) and ord(letter) != 32):
+        if ((ord(letter) < 1040 or ord(letter) > 1103) and ord(letter) != 32 and ord(letter) != 45):
             print("Non russian letter")
         else:
-            if ord(letter) == 32:
+            if ord(letter) == 45:
+                name_url += '-'
+            elif ord(letter) == 32:
                 name_url += '+'
             elif (ord(letter) <= 1055):
                 name_url += '%'
@@ -44,19 +46,29 @@ print(search_link)
 session = requests.get(search_link, headers=HEADERS) #Session for the requests
 soup = BeautifulSoup(session.text, 'lxml')
 
-try: #Trying to get the result of search
-    amount_of_books = soup.find('span', attrs={'style': 'font-size: 75%; color: #666666;'}).find('b') #Find amount of books or authors it has found
+try:
+    soup_type = soup.find('span', attrs={'style': 'font-size: 75%; color: #666666;'}) #Check if its authour or book
+    if "Найдено авторов:" in soup_type.text:
+        print("This is author")
+        type = "authors"
+    else:
+        print("This is book")
+        type = "books"
 except:
-    amount_of_books = 0
-    print("Found Books or Authors: " + str(amount_of_books))
+    type = "anything"
+
+try: #Trying to get the result of search
+    amount_of_type = soup.find('span', attrs={'style': 'font-size: 75%; color: #666666;'}).find('b') #Find amount of books or authors it has found
+except:
+    amount_of_type = 0
+    print("Found " + type + ": " + str(amount_of_type))
     print("Try again!")
     exit()
 
-print("Found Books or Authors: " + amount_of_books.text)
-if (amount_of_books.text != "0"): #Ask for countinue
+if (amount_of_type.text != "0"): #Ask for countinue
     des = ''
     while (des != 'n' or des != 'N' or des != 'Y' or des != 'y'):
-        print("Open the following book or author biography?: Y/N")
+        print("Open the following " + type + ": Y/N")
         des = input()
         if(des == 'N' or des == 'n'):
             exit()
@@ -67,6 +79,11 @@ else:
 
 text_link = 'https://ilibrary.ru' + str(soup.find('li').find('a').get('href')) #Getting link for the text of book or biography
 print(text_link)
+session = requests.get(text_link, headers=HEADERS) #Session for the requests
+soup = BeautifulSoup(session.text, 'lxml')
+if type == "books":
+    print("Make sure author is " + soup.find('div', class_="author").text)
+
 
     
 
