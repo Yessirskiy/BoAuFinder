@@ -1,8 +1,7 @@
 import requests
-import urllib.parse 
 from bs4 import BeautifulSoup
 import sys
-import os
+from docx import Document
 
 def transliterate(name):
    #Dictionary
@@ -13,7 +12,7 @@ def transliterate(name):
       'ю':'u','я':'ya', 'А':'A','Б':'B','В':'V','Г':'G','Д':'D','Е':'E','Ё':'YO',
       'Ж':'ZH','З':'Z','И':'I','Й':'I','К':'K','Л':'L','М':'M','Н':'N',
       'О':'O','П':'P','Р':'R','С':'S','Т':'T','У':'U','Ф':'F','Х':'H',
-      'Ц':'C','Ч':'CH','Ш':'SH','Щ':'SCH','Ъ':'','Ы':'y','Ь':'','Э':'E',
+      'Ц':'C','Ч':'CH','Ш':'SH','Щ':'SCH','Ъ':'','Ы':'Y','Ь':'','Э':'E',
       'Ю':'U','Я':'YA',',':'','?':'',' ':'_','~':'','!':'','@':'','#':'',
       '$':'','%':'','^':'','&':'','*':'','(':'',')':'','-':'','=':'','+':'',
       ':':'',';':'','<':'','>':'','\'':'','"':'','\\':'','/':'','№':'',
@@ -103,16 +102,27 @@ session = requests.get(text_link, headers=HEADERS) #Session for the requests
 soup = BeautifulSoup(session.text, 'lxml')
 if type == "books":
     print("Make sure author is " + soup.find('div', class_="author").text)
-
-file = open('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '.txt', "w")
-print("File for text created")
-text = soup.find('div', id='text').find_all('span', class_="p")
-for paragraph in text:
-    file.write(paragraph.text + '\n')
-file.close()
-print("Text copied!")
-
-
-    
+    document = Document()
+    document.save('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '.docx')
+    file = open('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '.txt', "w", encoding="utf-8")
+    print("File for text created")
+    file.write("Автор: " + soup.find('div', id='text').find('div', class_="author").text + '\n')
+    file.write("Произведение: " + soup.find('div', class_="title").find('h1').text + '\n')
+    file.write("-----------------------------------------" + '\n')
+    while True:      
+        try:
+            text = soup.find('div', id='text').find_all('span', class_="p")
+            file.write('\t' + soup.find('h2').text + '\n')
+            for paragraph in text:
+                if paragraph.text != soup.find('div', class_="author").text:
+                    file.write(paragraph.text + '\n')
+                    document.add_paragraph('hello')
+            next_page_link = 'https://ilibrary.ru' + str(soup.find('a', class_="navlink").get('href'))
+            session = requests.get(next_page_link, headers=HEADERS)
+            soup = BeautifulSoup(session.text, 'lxml')
+        except:
+            break
+    file.close()
+    print("Text copied!")
 
 
