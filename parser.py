@@ -97,7 +97,6 @@ else:
     print("No books or authors with this name")
 
 text_link = 'https://ilibrary.ru' + str(soup.find('li').find('a').get('href')) #Getting link for the text of book or biography
-print(text_link)
 session = requests.get(text_link, headers=HEADERS) #Session for the requests
 soup = BeautifulSoup(session.text, 'lxml')
 if type == "books":
@@ -106,22 +105,50 @@ if type == "books":
     document.save('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '.docx')
     file = open('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '.txt', "w", encoding="utf-8")
     print("File for text created")
+    print(text_link + '\n' + "page 1")
     file.write("Автор: " + soup.find('div', id='text').find('div', class_="author").text + '\n')
     file.write("Произведение: " + soup.find('div', class_="title").find('h1').text + '\n')
     file.write("-----------------------------------------" + '\n')
-    while True:      
+    try:
+        amount_of_pages = int(soup.find('span', attrs={'style': 'display:block;text-indent:0em;padding:.6em;font-size:90%;white-space:nowrap'}).text[-1])
+    except:
+        amount_of_pages = 1
+    i = 1
+    while i <= amount_of_pages:
+        text = soup.find('div', id='text').find_all('span', class_="p")
+
+        # Characters and stage block-----------------------
         try:
-            text = soup.find('div', id='text').find_all('span', class_="p")
-            file.write('\t' + soup.find('h2').text + '\n')
-            for paragraph in text:
-                if paragraph.text != soup.find('div', class_="author").text:
-                    file.write(paragraph.text + '\n')
-                    document.add_paragraph('hello')
-            next_page_link = 'https://ilibrary.ru' + str(soup.find('a', class_="navlink").get('href'))
-            session = requests.get(next_page_link, headers=HEADERS)
-            soup = BeautifulSoup(session.text, 'lxml')
+            list = []
+            for person in soup.find_all('span', class_="person"):
+                list.append(person)
+            characters = soup.find('div', class_="characters").find_all('span', class_="p")
+            file.write('\t' + '-' + soup.find('div', class_="characters").find('h5').text + '-' + '\n')
+            for person in characters:
+                file.write('\t' + person.text + '\n')
+            file.write('\t' + '-' + soup.find('div', class_='stage').text + '-' + '\n' + '\n')
         except:
-            break
+            pass
+        #--------------------------------------------------
+
+        try:
+            file.write('\t' +  '---' + soup.find('h2').text + '---' + '\n')
+        except:
+            pass
+        for paragraph in text:
+            try:
+               if paragraph.text != soup.find('div', class_="author").text:
+                    file.write(paragraph.text + '\n')
+            except:
+                file.write(paragraph.text + '\n')
+        if i + 1 <= amount_of_pages:
+            text_link = text_link.replace("p." +  str(i), "p." + str(i + 1))
+            print(text_link)
+            session = requests.get(text_link, headers=HEADERS) #Session for the requests
+            soup = BeautifulSoup(session.text, 'lxml')
+            print("page" + str(i + 1))
+        i += 1
+        
     file.close()
     print("Text copied!")
 
