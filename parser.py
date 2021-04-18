@@ -111,7 +111,6 @@ if type == "books":
     document = Document()
     document.save('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '.docx')
     file = open('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '.txt', "w", encoding="utf-8")
-    file1 = open('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '1.txt', "w", encoding="utf-8")
     print("File for text created")
     print(text_link + '\n' + "page 1")
     # Name of the book and Author---------------------------
@@ -120,66 +119,38 @@ if type == "books":
     file.write("-----------------------------------------" + '\n')
     #------------------------------------------------------
     try:
-        amount_of_pages = int(soup.find('span', attrs={'style': 'display:block;text-indent:0em;padding:.6em;font-size:90%;white-space:nowrap'}).text[-1])
+        amount_of_pages = int(soup.find('span', attrs={'style': 'display:block;text-indent:0em;padding:.6em;font-size:90%;white-space:nowrap'}).text[2:])
     except:
         amount_of_pages = 1
     i = 1
     while i <= amount_of_pages:
-
-        text = soup.find('div', id='text').find_all(['span', 'div'], class_=['p', 'stage'])
-
-
-        # Characters and stage block-----------------------
-        try:          
-            characters = soup.find('div', class_="characters").find_all('span', class_="p")
-            file.write('\t' + '-' + soup.find('div', class_="characters").find('h5').text + '-' + '\n')
-            for person in characters:
-                file.write('\t' + person.text)
-            file.write('\t' + '-' + soup.find('div', class_='stage').text + '-' + '\n' + '\n')
-        except:
-            pass
-        #--------------------------------------------------
-
-
-        try:
-            file.write('\n' + '\t' +  '---' + soup.find('h2').text + '---' + '\n' + '\n')
-        except:
-            pass
-
-
         # Copying each paragraph---------------------------
         for element in soup.find('div', id = "text").find_all():
             if element.name == "h5":
-                file1.write(element.text + '\n')
+                file.write(element.text + '\n')
             if element.get('class') == ['p']:
                 try: 
-                    writing_with_spaces(element.find('span', class_="person").text, file1)
+                    writing_with_spaces(element.find('span', class_="person").text, file)
                     try:                       
-                        file1.write(element.text[len(element.find('span', class_="person").text):].replace(element.find('div', class_="stage").text, '*' + element.find('div', class_="stage").text + '*') + '\n')
+                        file.write(element.text[len(element.find('span', class_="person").text):].replace(element.find('div', class_="stage").text, '*' + element.find('div', class_="stage").text + '*') + '\n')
                     except:
-                        file1.write(element.text[len(element.find('span', class_="person").text):] + '\n')
+                        file.write(element.text[len(element.find('span', class_="person").text):] + '\n')
                 except:
                     try:                       
-                        file1.write(element.text.replace(element.find('div', class_="stage").text, '*' + element.find('div', class_="stage").text + '*') + '\n')
+                        file.write(element.text.replace(element.find('div', class_="stage").text, '*' + element.find('div', class_="stage").text + '*') + '\n')
                     except:
-                        file1.write(element.text + '\n')
+                        try:
+                            if element.parent['class'] != ['author']:
+                                file.write(element.text + '\n')
+                        except:
+                            file.write(element.text + '\n')
+
             if element.name == "h2":
-                file1.write('\n' + '-' + element.text.upper() + '-' + '\n')
+                file.write('\n' + '-' + element.text.upper() + '-' + '\n')
             if element.get('class') == ["stage"]:
                 if element.parent['class'] != ['p']:
-                    file1.write('*' + element.text + '*' + '\n')
-
-
-        for paragraph in text:
-            try:
-                if paragraph.text != soup.find('div', class_="author").text and (paragraph.text not in soup.find('div', attrs={'style': 'text-align: center; text-indent: 0em'}).text) and paragraph['class'] != ['stage']:
-                    file.write(paragraph.text + '\n')
-                if paragraph['class'] == ['stage'] and (paragraph.text not in soup.find('div', attrs={'style': 'text-align: center; text-indent: 0em'}).text):
-                    file.write('-' + paragraph.text + '-' + '\n')
-            except:
-                file.write(paragraph.text + '\n')
+                    file.write('*' + element.text + '*' + '\n')
         #--------------------------------------------------
-
 
         # Getting next page(if exist)----------------------
         if i + 1 <= amount_of_pages:
