@@ -115,13 +115,12 @@ if type == "books":
         amount_of_pages = 1
     i = 1
     while i <= amount_of_pages:
-        text = soup.find('div', id='text').find_all('span', class_="p")
+
+        text = soup.find('div', id='text').find_all(['span', 'div'], class_=['p', 'stage'])
+
 
         # Characters and stage block-----------------------
-        try:
-            list = []
-            for person in soup.find_all('span', class_="person"):
-                list.append(person)
+        try:          
             characters = soup.find('div', class_="characters").find_all('span', class_="p")
             file.write('\t' + '-' + soup.find('div', class_="characters").find('h5').text + '-' + '\n')
             for person in characters:
@@ -131,16 +130,26 @@ if type == "books":
             pass
         #--------------------------------------------------
 
+
         try:
-            file.write('\t' +  '---' + soup.find('h2').text + '---' + '\n')
+            file.write('\n' + '\t' +  '---' + soup.find('h2').text + '---' + '\n' + '\n')
         except:
             pass
+
+
+        # Copying each paragraph---------------------------
         for paragraph in text:
             try:
-               if paragraph.text != soup.find('div', class_="author").text:
+                if paragraph.text != soup.find('div', class_="author").text and (paragraph.text not in soup.find('div', attrs={'style': 'text-align: center; text-indent: 0em'}).text) and paragraph['class'] != ['stage']:
                     file.write(paragraph.text + '\n')
+                if paragraph['class'] == ['stage'] and (paragraph.text not in soup.find('div', attrs={'style': 'text-align: center; text-indent: 0em'}).text):
+                    file.write('-' + paragraph.text + '-' + '\n')
             except:
                 file.write(paragraph.text + '\n')
+        #--------------------------------------------------
+
+
+        # Getting next page(if exist)----------------------
         if i + 1 <= amount_of_pages:
             text_link = text_link.replace("p." +  str(i), "p." + str(i + 1))
             print(text_link)
@@ -148,6 +157,7 @@ if type == "books":
             soup = BeautifulSoup(session.text, 'lxml')
             print("page" + str(i + 1))
         i += 1
+        #-------------------------------------------------
         
     file.close()
     print("Text copied!")
