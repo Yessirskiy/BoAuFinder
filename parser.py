@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import sys
 from docx import Document
+import time
+from hive_progress_bar import ProgressBar
 
 def transliterate(name):
    #Dictionary
@@ -111,23 +113,34 @@ if type == "books":
     document = Document()
     document.save('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '.docx')
     file = open('C:\\Users\\nidob\\Projects\\BoAuFinder\\texts\\' + transliterate(soup.find('div', class_='title').find('h1').text) + '.txt', "w", encoding="utf-8")
-    print("File for text created")
-    print(text_link + '\n' + "page 1")
+    #print("File for text created")
+    #print(text_link + '\n' + "page 1")
+
+
     # Name of the book and Author---------------------------
     file.write("Автор: " + soup.find('div', id='text').find('div', class_="author").text + '\n')
     file.write("Произведение: " + soup.find('div', class_="title").find('h1').text + '\n')
     file.write("-----------------------------------------" + '\n')
     #------------------------------------------------------
+
+    # Getting amount of pages------------------------------
     try:
         amount_of_pages = int(soup.find('span', attrs={'style': 'display:block;text-indent:0em;padding:.6em;font-size:90%;white-space:nowrap'}).text[2:])
     except:
         amount_of_pages = 1
+    bar = ProgressBar('Copying', amount_of_pages)
     i = 1
+
+    #------------------------------------------------------
+
+
     while i <= amount_of_pages:
         # Copying each paragraph---------------------------
         for element in soup.find('div', id = "text").find_all():
             if element.name == "h5":
                 file.write(element.text + '\n')
+            #if element.attrs['style'] == 'margin:0.5em 0em;background-color:#222;height:1px;width:25%':
+            #    file.write('-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-' + '\n')
             if element.get('class') == ['p']:
                 try: 
                     writing_with_spaces(element.find('span', class_="person").text, file)
@@ -152,16 +165,25 @@ if type == "books":
                     file.write('*' + element.text + '*' + '\n')
         #--------------------------------------------------
 
+
+
         # Getting next page(if exist)----------------------
         if i + 1 <= amount_of_pages:
             text_link = text_link.replace("p." +  str(i), "p." + str(i + 1))
-            print(text_link)
+            #print(text_link)
             session = requests.get(text_link, headers=HEADERS) #Session for the requests
             soup = BeautifulSoup(session.text, 'lxml')
-            print("page" + str(i + 1))
+            #print("page" + str(i + 1))
         i += 1
         #-------------------------------------------------
-        
+
+
+
+        #Progress bar-------------------------------------
+        time.sleep(0.01)
+        bar.next()
+        #-------------------------------------------------
+
     file.close()
     print("Text copied!")
 
