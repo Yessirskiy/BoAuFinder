@@ -154,9 +154,22 @@ if type == "books":
             if element.get('class') == ['p']:
                 try: 
                     writing_with_spaces(element.find('span', class_="person").text, file1)
-                    file1.write(element.text[len(element.find('span', class_="person").text):] + '\n')
+                    try:                       
+                        file1.write(element.text[len(element.find('span', class_="person").text):].replace(element.find('div', class_="stage").text, '*' + element.find('div', class_="stage").text + '*') + '\n')
+                    except:
+                        file1.write(element.text[len(element.find('span', class_="person").text):] + '\n')
                 except:
-                    file1.write(element.text + '\n')
+                    try:                       
+                        file1.write(element.text.replace(element.find('div', class_="stage").text, '*' + element.find('div', class_="stage").text + '*') + '\n')
+                    except:
+                        file1.write(element.text + '\n')
+            if element.name == "h2":
+                file1.write('\n' + '-' + element.text.upper() + '-' + '\n')
+            if element.get('class') == ["stage"]:
+                if element.parent['class'] != ['p']:
+                    file1.write('*' + element.text + '*' + '\n')
+
+
         for paragraph in text:
             try:
                 if paragraph.text != soup.find('div', class_="author").text and (paragraph.text not in soup.find('div', attrs={'style': 'text-align: center; text-indent: 0em'}).text) and paragraph['class'] != ['stage']:
