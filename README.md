@@ -1,2 +1,2 @@
 # BoAuFinder
-Simple books and authors finder
+Данный парсер предназначен для копирования текста с сайта ilibrary.com в блокнот
