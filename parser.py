@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import sys
-from docx import Document
 import time
 from hive_progress_bar import ProgressBar
 
