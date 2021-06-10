@@ -16,4 +16,4 @@
 
 Склонируйте репозиторий используя комманду: git clone https://github.com/Yessirskiy/BoAuFinder.git
 
-###Запустите парсер: python parser.py
+### Запустите парсер: python parser.py
